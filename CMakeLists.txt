@@ -1,31 +1,34 @@
 cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+project(CrystalServer LANGUAGES CXX)
 
-# Base configurations and settings for the project
-include(BaseConfig)
-include(GNUInstallDirs)
+# Ustawienie standardu C++
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Import configurations, source definitions, and linker settings
-include(CrystalLib)
-
-# Define main executable target, set it up and link to main library
+# Główne pliki źródłowe
 add_executable(${PROJECT_NAME} main.cpp)
 
+# Dodanie ikony dla Windows w sposób bardziej przejrzysty
 if(MSVC)
-    # Add executable icon for Windows
     target_sources(${PROJECT_NAME} PRIVATE ../cmake/crystalserver.rc)
 endif()
 
-setup_target(${PROJECT_NAME})
-set_output_directory(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib)
+# Łączenie z biblioteką
+target_link_libraries(${PROJECT_NAME} PRIVATE CrystalServer_lib)
 
-# Configurar IPO e Linkagem Incremental para o executável
-configure_linking(${PROJECT_NAME})
+# Ustawienie opcji kompilatora dla wszystkich platform i typów budowania
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
 
-# Compiler warnings and options
-if (UNIX)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        target_compile_options(${PROJECT_NAME}_lib PRIVATE -Wall -Wextra -Wpedantic)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-    endif()
-endif()
+# Opcje specyficzne dla Debug
+target_compile_options(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Debug>:-g>
+)
+
+# Opcje specyficzne dla Release
+target_compile_options(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Release>:-O3>
+)
